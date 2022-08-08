@@ -2,9 +2,13 @@ package com.example.test_project.service;
 
 import com.example.test_project.dto.ResultDto;
 import com.example.test_project.utils.Constants;
+import com.example.test_project.utils.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,7 +16,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,6 +28,7 @@ public class WriteFileServiceImpl implements WriteFileService {
 
     @Override
     public void generateFiles() {
+        FileUtils.createDataDirectory();
         final Random random = new Random();
         for (int i = 1; i <= Constants.QUANTITY_OF_FILES; i++) {
             generateOneFile(random, Constants.PATTERN_OF_FILENAME + i + ".txt");
@@ -28,8 +37,21 @@ public class WriteFileServiceImpl implements WriteFileService {
 
     @Override
     public void joinFilesToOneFile(String invalidSource) {
-        for (int i = 0; i <= 10; i++) {
+        FileUtils.createDataDirectory();
+        FileUtils.deleteFileIfExist(Path.of(Constants.PATH_TO_COMMON_FILE));
+        File data = new File(Constants.PATH_TO_FILES);
+        List<File> files = Arrays.asList(Objects.requireNonNull(data.listFiles()));
 
+        if (files.isEmpty()) {
+            throw new RuntimeException("Directory data is empty");
+        }
+
+        for (File file : files) {
+            try {
+                processFileForJoin(file, invalidSource);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -48,9 +70,7 @@ public class WriteFileServiceImpl implements WriteFileService {
             String source = generateOneSource(random);
             Path path = Paths.get(Constants.PATH_TO_FILES + fileName);
             try {
-                if (!Files.exists(path)) {
-                    Files.createFile(path);
-                }
+                FileUtils.openFileIfExist(path);
                 Files.writeString(path,
                         source + "\n", StandardOpenOption.APPEND);
                 log.info("wrote source {} in file {}", source, fileName);
@@ -83,7 +103,7 @@ public class WriteFileServiceImpl implements WriteFileService {
         long minQuantityOfDays = currentDate.minusYears(Constants.YEARS_TO_SUBTRACT).toEpochDay();
         long randomQuantityOfDays = minQuantityOfDays +
                 (long) (Math.random() * (maxQuantityOfDays - minQuantityOfDays));
-        return LocalDate.ofEpochDay(randomQuantityOfDays).toString().replace("-",".");
+        return LocalDate.ofEpochDay(randomQuantityOfDays).toString().replace("-", ".");
     }
 
     private String generateRandomSourceOfSymbols(Random random, String listOfSymbols) {
@@ -93,5 +113,21 @@ public class WriteFileServiceImpl implements WriteFileService {
             buffer.append(listOfSymbols.charAt(randomLimitedInt));
         }
         return buffer.toString();
+    }
+
+    private void processFileForJoin(File file, String invalidSource) throws IOException {
+        Path pathToCommonFile = Path.of(Constants.PATH_TO_COMMON_FILE);
+        FileUtils.openFileIfExist(pathToCommonFile);
+        List<String> sources = Files.readAllLines(file.toPath());
+        if (!ObjectUtils.isEmpty(invalidSource)) {
+            sources = sources.stream()
+                    .filter(source -> !source.contains(invalidSource))
+                    .collect(Collectors.toList());
+        }
+
+        for (String source : sources) {
+            Files.writeString(Path.of(Constants.PATH_TO_COMMON_FILE), source + "\n", StandardOpenOption.APPEND);
+            log.info("wrote source {} in file common file", source);
+        }
     }
 }
