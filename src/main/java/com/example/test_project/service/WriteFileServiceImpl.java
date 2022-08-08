@@ -126,7 +126,7 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
 
         for (String source : sources) {
-            Files.writeString(Path.of(Constants.PATH_TO_COMMON_FILE), source + "\n", StandardOpenOption.APPEND);
+            Files.writeString(pathToCommonFile, source + "\n", StandardOpenOption.APPEND);
             log.info("wrote source {} in file common file", source);
         }
     }
