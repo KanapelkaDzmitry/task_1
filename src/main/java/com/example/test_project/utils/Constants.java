@@ -6,6 +6,7 @@ public class Constants {
     public static final int QUANTITY_OF_SYMBOLS = 10;
     public static final String PATTERN_OF_FILENAME = "file_";
     public static final String PATH_TO_FILES = "src/main/resources/data/";
+    public static final String PATH_TO_COMMON_FILE = "src/main/resources/data/common_file.txt";
     public static final String SEPARATOR = "||";
     public static final String LIST_OF_LATIN_SYMBOLS
             = "ABCDEFGHIKLMNOPQRSTVXYZabcdefghiklmnopqrstvxyz";
