@@ -27,5 +27,10 @@ public class WriteFileController {
     public void joinFiles(@RequestParam String invalidSource) {
         writeFileService.joinFilesToOneFile(invalidSource);
     }
+
+    @GetMapping("/import")
+    public void importToDataBase(){
+        writeFileService.importToDatabase();
+    }
 }
 
