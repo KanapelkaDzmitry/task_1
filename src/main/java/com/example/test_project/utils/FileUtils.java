@@ -2,10 +2,14 @@ package com.example.test_project.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 public class FileUtils {
@@ -39,4 +43,17 @@ public class FileUtils {
             }
         }
     }
+
+    public static List<File> readFilesFromDataDirectory(){
+        FileUtils.createDataDirectory();
+        File data = new File(Constants.PATH_TO_FILES);
+        List<File> files = Arrays.asList(Objects.requireNonNull(data.listFiles()));
+
+        if (files.isEmpty()) {
+            throw new RuntimeException("Directory data is empty");
+        }
+
+        return files;
+    }
+
 }

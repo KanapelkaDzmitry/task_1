@@ -1,12 +1,17 @@
 package com.example.test_project.service;
 
 import com.example.test_project.dto.ResultDto;
+import com.example.test_project.entity.FileModel;
+import com.example.test_project.entity.Source;
+import com.example.test_project.repository.FileRepository;
+import com.example.test_project.repository.SourceRepository;
 import com.example.test_project.utils.Constants;
 import com.example.test_project.utils.FileUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,15 +21,17 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class WriteFileServiceImpl implements WriteFileService {
+
+    private final SourceRepository sourceRepository;
+    private final FileRepository fileRepository;
 
     @Override
     public void generateFiles() {
@@ -37,14 +44,8 @@ public class WriteFileServiceImpl implements WriteFileService {
 
     @Override
     public void joinFilesToOneFile(String invalidSource) {
-        FileUtils.createDataDirectory();
         FileUtils.deleteFileIfExist(Path.of(Constants.PATH_TO_COMMON_FILE));
-        File data = new File(Constants.PATH_TO_FILES);
-        List<File> files = Arrays.asList(Objects.requireNonNull(data.listFiles()));
-
-        if (files.isEmpty()) {
-            throw new RuntimeException("Directory data is empty");
-        }
+        List<File> files = FileUtils.readFilesFromDataDirectory();
 
         for (File file : files) {
             try {
@@ -57,7 +58,17 @@ public class WriteFileServiceImpl implements WriteFileService {
 
     @Override
     public void importToDatabase() {
+        List<File> files = FileUtils.readFilesFromDataDirectory();
 
+        for (File file : files) {
+            try {
+                if (!file.getName().endsWith(Constants.NAME_OF_COMMON_FILE)){
+                    processFileForDataBase(file);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -126,8 +137,30 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
 
         for (String source : sources) {
-            Files.writeString(Path.of(Constants.PATH_TO_COMMON_FILE), source + "\n", StandardOpenOption.APPEND);
+            Files.writeString(pathToCommonFile, source + "\n", StandardOpenOption.APPEND);
             log.info("wrote source {} in file common file", source);
         }
     }
+
+    private void processFileForDataBase(File file) throws IOException {
+        List<String> rows = Files.readAllLines(file.toPath());
+        FileModel fileModel = FileModel.builder()
+                .fileName(file.getName())
+                .build();
+        fileModel = fileRepository.save(fileModel);
+        for (String row : rows) {
+            String[] splitSource = row.split("\\|\\|");
+            Source source = Source.builder()
+                    .fileModel(fileModel)
+                    .randomDate(splitSource[0])
+                    .latinSymbols(splitSource[1])
+                    .cyrillicSymbols(splitSource[2])
+                    .wholeDigit(Integer.parseInt(splitSource[3]))
+                    .fractionalDigit(Double.parseDouble(splitSource[4].replaceAll(",",".")))
+                    .build();
+            sourceRepository.save(source);
+            log.info("wrote source {} in database", source);
+        }
+    }
+
 }
