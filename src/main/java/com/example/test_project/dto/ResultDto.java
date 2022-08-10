@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResultDto {
-    int sumWholeValues;
 
-    double medianFractionalValues;
+    Long sumOfWholeDigits;
+    Double medianOfFractionalDigits;
 }

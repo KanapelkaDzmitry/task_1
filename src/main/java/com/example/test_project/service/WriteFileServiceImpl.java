@@ -73,7 +73,13 @@ public class WriteFileServiceImpl implements WriteFileService {
 
     @Override
     public ResultDto getResultOfStatistic() {
-        return null;
+        final Long sumOfWholeDigits = sourceRepository.getSumOfWholeDigits();
+        final Double medianOfFractionalDigits = sourceRepository.getMedianOfFractionalDigits();
+
+        return ResultDto.builder()
+                .sumOfWholeDigits(sumOfWholeDigits)
+                .medianOfFractionalDigits(medianOfFractionalDigits)
+                .build();
     }
 
     private void generateOneFile(Random random, String fileName) {

@@ -6,11 +6,11 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     properties:
       hibernate:
         use_sql: false
         format_sql: false
         show_sql: false
-    show-sql: true
+    show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
