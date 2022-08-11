@@ -1,5 +1,6 @@
 package com.example.test_project.controller;
 
+import com.example.test_project.dto.ResultDto;
 import com.example.test_project.service.WriteFileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,13 +25,18 @@ public class WriteFileController {
     }
 
     @GetMapping("/join")
-    public void joinFiles(@RequestParam String invalidSource) {
-        writeFileService.joinFilesToOneFile(invalidSource);
+    public void joinFiles(@RequestParam String invalidLine) {
+        writeFileService.joinFilesToOneFile(invalidLine);
     }
 
     @GetMapping("/import")
     public void importToDataBase(){
         writeFileService.importToDatabase();
+    }
+
+    @GetMapping("/result")
+    public ResultDto getResultOfStatistic() {
+        return writeFileService.getResultOfStatistic();
     }
 }
 

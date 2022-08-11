@@ -7,7 +7,7 @@ create table file
     primary key (id)
 );
 
-create table source
+create table line
 (
     id               bigserial not null,
     random_date      varchar,
@@ -19,7 +19,7 @@ create table source
     primary key (id)
 );
 
-alter table if exists source
-    add constraint forgein_key_source_to_file
+alter table if exists line
+    add constraint forgein_key_line_to_file
     foreign key (file_id)
-    references source;
+    references line;
