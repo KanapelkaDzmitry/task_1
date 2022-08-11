@@ -21,7 +21,7 @@ public class FileUtils {
         }
     }
 
-    public static void deleteFileIfExist(Path path){
+    public static void deleteFileIfExist(Path path) {
         if (Files.exists(path)) {
             try {
                 Files.delete(path);
@@ -44,7 +44,17 @@ public class FileUtils {
         }
     }
 
-    public static List<File> readFilesFromDataDirectory(){
+    public static int getLastFileNumber() {
+        List<File> files = readFilesFromDataDirectory();
+        return files.stream()
+                .filter(file -> !file.getName().endsWith(Constants.NAME_OF_COMMON_FILE))
+                .mapToInt(file -> getFileNumber(file.getName()))
+                .max()
+                .orElse(1);
+
+    }
+
+    public static List<File> readFilesFromDataDirectory() {
         FileUtils.createDataDirectory();
         File data = new File(Constants.PATH_TO_FILES);
         List<File> files = Arrays.asList(Objects.requireNonNull(data.listFiles()));
@@ -55,5 +65,14 @@ public class FileUtils {
 
         return files;
     }
+
+    public static int getFileNumber(String fileName) {
+        int startOfValue = fileName.lastIndexOf(Constants.PREFIX_OF_FILENAME)
+                + Constants.PREFIX_OF_FILENAME.length();
+        int endOfValue = fileName.length() - Constants.POSTFIX_OF_FILENAME.length();
+
+        return Integer.parseInt(fileName.substring(startOfValue, endOfValue));
+    }
+
 
 }

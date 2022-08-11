@@ -35,9 +35,12 @@ public class WriteFileServiceImpl implements WriteFileService {
     @Override
     public void generateFiles() {
         FileUtils.createDataDirectory();
+        int numberOfFile = FileUtils.getLastFileNumber();
         final Random random = new Random();
         for (int i = 1; i <= Constants.QUANTITY_OF_FILES; i++) {
-            generateOneFile(random, Constants.PATTERN_OF_FILENAME + i + ".txt");
+            generateOneFile(random,
+                    Constants.PREFIX_OF_FILENAME + numberOfFile + Constants.POSTFIX_OF_FILENAME);
+            numberOfFile++;
         }
     }
 
@@ -61,7 +64,7 @@ public class WriteFileServiceImpl implements WriteFileService {
 
         for (File file : files) {
             try {
-                if (!file.getName().endsWith(Constants.NAME_OF_COMMON_FILE)){
+                if (!file.getName().endsWith(Constants.NAME_OF_COMMON_FILE)) {
                     processFileForDataBase(file);
                 }
             } catch (IOException e) {
@@ -165,10 +168,10 @@ public class WriteFileServiceImpl implements WriteFileService {
                     .latinSymbols(splitLine[1])
                     .cyrillicSymbols(splitLine[2])
                     .wholeDigit(Integer.parseInt(splitLine[3]))
-                    .fractionalDigit(Double.parseDouble(splitLine[4].replaceAll(",",".")))
+                    .fractionalDigit(Double.parseDouble(splitLine[4].replaceAll(",", ".")))
                     .build();
             lineRepository.save(line);
-            countProcessedRows ++;
+            countProcessedRows++;
             log.info("have written {} lines in database, {} lines left", countProcessedRows, lines.size() - countProcessedRows);
         }
     }
