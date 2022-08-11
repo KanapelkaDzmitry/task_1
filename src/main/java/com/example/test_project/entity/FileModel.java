@@ -25,6 +25,6 @@ public class FileModel extends BaseEntity{
     private String fileName;
 
     @OneToMany(mappedBy = "fileModel", fetch = FetchType.LAZY)
-    private List<Source> sources;
+    private List<Line> lines;
 
 }

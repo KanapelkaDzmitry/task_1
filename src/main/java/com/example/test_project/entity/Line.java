@@ -14,7 +14,7 @@ import javax.persistence.ManyToOne;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Source extends BaseEntity {
+public class Line extends BaseEntity {
     private String randomDate;
     private String latinSymbols;
     private String cyrillicSymbols;

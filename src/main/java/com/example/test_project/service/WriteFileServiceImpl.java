@@ -2,9 +2,9 @@ package com.example.test_project.service;
 
 import com.example.test_project.dto.ResultDto;
 import com.example.test_project.entity.FileModel;
-import com.example.test_project.entity.Source;
+import com.example.test_project.entity.Line;
 import com.example.test_project.repository.FileRepository;
-import com.example.test_project.repository.SourceRepository;
+import com.example.test_project.repository.LineRepository;
 import com.example.test_project.utils.Constants;
 import com.example.test_project.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class WriteFileServiceImpl implements WriteFileService {
 
-    private final SourceRepository sourceRepository;
+    private final LineRepository lineRepository;
     private final FileRepository fileRepository;
 
     @Override
@@ -42,13 +42,13 @@ public class WriteFileServiceImpl implements WriteFileService {
     }
 
     @Override
-    public void joinFilesToOneFile(String invalidSource) {
+    public void joinFilesToOneFile(String invalidLine) {
         FileUtils.deleteFileIfExist(Path.of(Constants.PATH_TO_COMMON_FILE));
         List<File> files = FileUtils.readFilesFromDataDirectory();
 
         for (File file : files) {
             try {
-                processFileForJoin(file, invalidSource);
+                processFileForJoin(file, invalidLine);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -72,8 +72,8 @@ public class WriteFileServiceImpl implements WriteFileService {
 
     @Override
     public ResultDto getResultOfStatistic() {
-        final Long sumOfWholeDigits = sourceRepository.getSumOfWholeDigits();
-        final Double medianOfFractionalDigits = sourceRepository.getMedianOfFractionalDigits();
+        final Long sumOfWholeDigits = lineRepository.getSumOfWholeDigits();
+        final Double medianOfFractionalDigits = lineRepository.getMedianOfFractionalDigits();
 
         return ResultDto.builder()
                 .sumOfWholeDigits(sumOfWholeDigits)
@@ -82,24 +82,24 @@ public class WriteFileServiceImpl implements WriteFileService {
     }
 
     private void generateOneFile(Random random, String fileName) {
-        for (int i = 1; i <= Constants.QUANTITY_OF_SOURCES_IN_EACH_FILE; i++) {
-            String source = generateOneSource(random);
+        for (int i = 1; i <= Constants.QUANTITY_OF_LINES_IN_EACH_FILE; i++) {
+            String line = generateOneLine(random);
             Path path = Paths.get(Constants.PATH_TO_FILES + fileName);
             try {
                 FileUtils.openFileIfExist(path);
                 Files.writeString(path,
-                        source + "\n", StandardOpenOption.APPEND);
-                log.info("wrote source {} in file {}", source, fileName);
+                        line + "\n", StandardOpenOption.APPEND);
+                log.info("wrote line {} in file {}", line, fileName);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private String generateOneSource(Random random) {
+    private String generateOneLine(Random random) {
         String randomDate = generateRandomDateAsString(random);
-        String randomLatinChars = generateRandomSourceOfSymbols(random, Constants.LIST_OF_LATIN_SYMBOLS);
-        String randomCyrillicChars = generateRandomSourceOfSymbols(random, Constants.LIST_OF_CYRILLIC_SYMBOLS);
+        String randomLatinChars = generateRandomLineOfSymbols(random, Constants.LIST_OF_LATIN_SYMBOLS);
+        String randomCyrillicChars = generateRandomLineOfSymbols(random, Constants.LIST_OF_CYRILLIC_SYMBOLS);
         String randomWholeDigit = String.valueOf(random.nextInt(Constants.MAX_WHOLE_DIGIT - Constants.MIN_DIGIT + 1)
                 + Constants.MIN_DIGIT);
         DecimalFormat decimalFormat = new DecimalFormat("#.########");
@@ -122,7 +122,7 @@ public class WriteFileServiceImpl implements WriteFileService {
         return LocalDate.ofEpochDay(randomQuantityOfDays).toString().replace("-", ".");
     }
 
-    private String generateRandomSourceOfSymbols(Random random, String listOfSymbols) {
+    private String generateRandomLineOfSymbols(Random random, String listOfSymbols) {
         StringBuilder buffer = new StringBuilder(Constants.QUANTITY_OF_SYMBOLS);
         for (int i = 0; i < Constants.QUANTITY_OF_SYMBOLS; i++) {
             int randomLimitedInt = random.nextInt(listOfSymbols.length());
@@ -131,25 +131,25 @@ public class WriteFileServiceImpl implements WriteFileService {
         return buffer.toString();
     }
 
-    private void processFileForJoin(File file, String invalidSource) throws IOException {
+    private void processFileForJoin(File file, String invalidLine) throws IOException {
         Path pathToCommonFile = Path.of(Constants.PATH_TO_COMMON_FILE);
         FileUtils.openFileIfExist(pathToCommonFile);
-        List<String> sources = Files.readAllLines(file.toPath());
-        if (!ObjectUtils.isEmpty(invalidSource)) {
-            sources = sources.stream()
-                    .filter(source -> !source.contains(invalidSource))
+        List<String> lines = Files.readAllLines(file.toPath());
+        if (!ObjectUtils.isEmpty(invalidLine)) {
+            lines = lines.stream()
+                    .filter(line -> !line.contains(invalidLine))
                     .collect(Collectors.toList());
         }
 
-        for (String source : sources) {
-            Files.writeString(pathToCommonFile, source + "\n", StandardOpenOption.APPEND);
-            log.info("wrote source {} in file common file", source);
+        for (String line : lines) {
+            Files.writeString(pathToCommonFile, line + "\n", StandardOpenOption.APPEND);
+            log.info("wrote line {} in file common file", line);
         }
     }
 
     private void processFileForDataBase(File file) throws IOException {
-        final List<String> rows = Files.readAllLines(file.toPath());
-        log.info("processing file {} with {} rows", file.getName(), rows.size());
+        final List<String> lines = Files.readAllLines(file.toPath());
+        log.info("processing file {} with {} lines", file.getName(), lines.size());
         FileModel fileModel = FileModel.builder()
                 .fileName(file.getName())
                 .build();
@@ -157,19 +157,19 @@ public class WriteFileServiceImpl implements WriteFileService {
 
         int countProcessedRows = 0;
 
-        for (String row : rows) {
-            String[] splitSource = row.split("\\|\\|");
-            Source source = Source.builder()
+        for (String row : lines) {
+            String[] splitLine = row.split("\\|\\|");
+            Line line = Line.builder()
                     .fileModel(fileModel)
-                    .randomDate(splitSource[0])
-                    .latinSymbols(splitSource[1])
-                    .cyrillicSymbols(splitSource[2])
-                    .wholeDigit(Integer.parseInt(splitSource[3]))
-                    .fractionalDigit(Double.parseDouble(splitSource[4].replaceAll(",",".")))
+                    .randomDate(splitLine[0])
+                    .latinSymbols(splitLine[1])
+                    .cyrillicSymbols(splitLine[2])
+                    .wholeDigit(Integer.parseInt(splitLine[3]))
+                    .fractionalDigit(Double.parseDouble(splitLine[4].replaceAll(",",".")))
                     .build();
-            sourceRepository.save(source);
+            lineRepository.save(line);
             countProcessedRows ++;
-            log.info("have written {} rows in database, {} rows left", countProcessedRows, rows.size() - countProcessedRows);
+            log.info("have written {} lines in database, {} lines left", countProcessedRows, lines.size() - countProcessedRows);
         }
     }
 

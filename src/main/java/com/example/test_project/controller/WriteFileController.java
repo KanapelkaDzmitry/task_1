@@ -25,8 +25,8 @@ public class WriteFileController {
     }
 
     @GetMapping("/join")
-    public void joinFiles(@RequestParam String invalidSource) {
-        writeFileService.joinFilesToOneFile(invalidSource);
+    public void joinFiles(@RequestParam String invalidLine) {
+        writeFileService.joinFilesToOneFile(invalidLine);
     }
 
     @GetMapping("/import")
