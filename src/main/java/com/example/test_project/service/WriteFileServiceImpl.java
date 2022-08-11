@@ -9,7 +9,6 @@ import com.example.test_project.utils.Constants;
 import com.example.test_project.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -149,11 +148,15 @@ public class WriteFileServiceImpl implements WriteFileService {
     }
 
     private void processFileForDataBase(File file) throws IOException {
-        List<String> rows = Files.readAllLines(file.toPath());
+        final List<String> rows = Files.readAllLines(file.toPath());
+        log.info("processing file {} with {} rows", file.getName(), rows.size());
         FileModel fileModel = FileModel.builder()
                 .fileName(file.getName())
                 .build();
         fileModel = fileRepository.save(fileModel);
+
+        int countProcessedRows = 0;
+
         for (String row : rows) {
             String[] splitSource = row.split("\\|\\|");
             Source source = Source.builder()
@@ -165,7 +168,8 @@ public class WriteFileServiceImpl implements WriteFileService {
                     .fractionalDigit(Double.parseDouble(splitSource[4].replaceAll(",",".")))
                     .build();
             sourceRepository.save(source);
-            log.info("wrote source {} in database", source);
+            countProcessedRows ++;
+            log.info("have written {} rows in database, {} rows left", countProcessedRows, rows.size() - countProcessedRows);
         }
     }
 
