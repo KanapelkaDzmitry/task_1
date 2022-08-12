@@ -1,5 +1,7 @@
 package com.example.test_project.utils;
-
+/*
+Класс в котором записаны все постоянные значения
+ */
 public class Constants {
     public static final int QUANTITY_OF_FILES = 10;
     public static final int QUANTITY_OF_LINES_IN_EACH_FILE = 10;

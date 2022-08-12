@@ -32,6 +32,9 @@ public class WriteFileServiceImpl implements WriteFileService {
     private final LineRepository lineRepository;
     private final FileRepository fileRepository;
 
+    /*
+     Метод генерирующий файлы
+     */
     @Override
     public void generateFiles() {
         FileUtils.createDataDirectory();
@@ -44,6 +47,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод для объединения всех файлов в один
+     */
     @Override
     public void joinFilesToOneFile(String invalidLine) {
         FileUtils.deleteFileIfExist(Path.of(Constants.PATH_TO_COMMON_FILE));
@@ -58,6 +64,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод для импорта файлов в базу данных
+     */
     @Override
     public void importToDatabase() {
         List<File> files = FileUtils.readFilesFromDataDirectory();
@@ -73,6 +82,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод для получения результата суммы всех целых чисел и медианы всех дробных чисел
+     */
     @Override
     public ResultDto getResultOfStatistic() {
         final Long sumOfWholeDigits = lineRepository.getSumOfWholeDigits();
@@ -84,6 +96,9 @@ public class WriteFileServiceImpl implements WriteFileService {
                 .build();
     }
 
+    /*
+    Метод генерирующий один файл
+     */
     private void generateOneFile(Random random, String fileName) {
         for (int i = 1; i <= Constants.QUANTITY_OF_LINES_IN_EACH_FILE; i++) {
             String line = generateOneLine(random);
@@ -99,6 +114,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод собирающий и генерирующий одну строку
+     */
     private String generateOneLine(Random random) {
         String randomDate = generateRandomDateAsString(random);
         String randomLatinChars = generateRandomLineOfSymbols(random, Constants.LIST_OF_LATIN_SYMBOLS);
@@ -116,6 +134,9 @@ public class WriteFileServiceImpl implements WriteFileService {
                 randomFractionalDigit;
     }
 
+    /*
+    Метод генерирующий дату в строке
+     */
     private String generateRandomDateAsString(Random random) {
         LocalDate currentDate = LocalDate.now();
         long maxQuantityOfDays = currentDate.toEpochDay();
@@ -125,6 +146,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         return LocalDate.ofEpochDay(randomQuantityOfDays).toString().replace("-", ".");
     }
 
+    /*
+    Метод генерирующий случайные символы
+     */
     private String generateRandomLineOfSymbols(Random random, String listOfSymbols) {
         StringBuilder buffer = new StringBuilder(Constants.QUANTITY_OF_SYMBOLS);
         for (int i = 0; i < Constants.QUANTITY_OF_SYMBOLS; i++) {
@@ -134,6 +158,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         return buffer.toString();
     }
 
+    /*
+    Метод для присоединения файла
+     */
     private void processFileForJoin(File file, String invalidLine) throws IOException {
         Path pathToCommonFile = Path.of(Constants.PATH_TO_COMMON_FILE);
         FileUtils.openFileIfExist(pathToCommonFile);
@@ -150,6 +177,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод для чтения файлов и заполнения базы данных
+     */
     private void processFileForDataBase(File file) throws IOException {
         final List<String> lines = Files.readAllLines(file.toPath());
         log.info("processing file {} with {} lines", file.getName(), lines.size());
