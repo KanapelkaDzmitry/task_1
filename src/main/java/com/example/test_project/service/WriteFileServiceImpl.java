@@ -32,15 +32,24 @@ public class WriteFileServiceImpl implements WriteFileService {
     private final LineRepository lineRepository;
     private final FileRepository fileRepository;
 
+    /*
+     Метод генерирующий файлы
+     */
     @Override
     public void generateFiles() {
         FileUtils.createDataDirectory();
+        int numberOfFile = FileUtils.getLastFileNumber();
         final Random random = new Random();
         for (int i = 1; i <= Constants.QUANTITY_OF_FILES; i++) {
-            generateOneFile(random, Constants.PATTERN_OF_FILENAME + i + ".txt");
+            generateOneFile(random,
+                    Constants.PREFIX_OF_FILENAME + numberOfFile + Constants.POSTFIX_OF_FILENAME);
+            numberOfFile++;
         }
     }
 
+    /*
+    Метод для объединения всех файлов в один
+     */
     @Override
     public void joinFilesToOneFile(String invalidLine) {
         FileUtils.deleteFileIfExist(Path.of(Constants.PATH_TO_COMMON_FILE));
@@ -55,13 +64,16 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод для импорта файлов в базу данных
+     */
     @Override
     public void importToDatabase() {
         List<File> files = FileUtils.readFilesFromDataDirectory();
 
         for (File file : files) {
             try {
-                if (!file.getName().endsWith(Constants.NAME_OF_COMMON_FILE)){
+                if (!file.getName().endsWith(Constants.NAME_OF_COMMON_FILE)) {
                     processFileForDataBase(file);
                 }
             } catch (IOException e) {
@@ -70,6 +82,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод для получения результата суммы всех целых чисел и медианы всех дробных чисел
+     */
     @Override
     public ResultDto getResultOfStatistic() {
         final Long sumOfWholeDigits = lineRepository.getSumOfWholeDigits();
@@ -81,6 +96,9 @@ public class WriteFileServiceImpl implements WriteFileService {
                 .build();
     }
 
+    /*
+    Метод генерирующий один файл
+     */
     private void generateOneFile(Random random, String fileName) {
         for (int i = 1; i <= Constants.QUANTITY_OF_LINES_IN_EACH_FILE; i++) {
             String line = generateOneLine(random);
@@ -96,6 +114,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод собирающий и генерирующий одну строку
+     */
     private String generateOneLine(Random random) {
         String randomDate = generateRandomDateAsString(random);
         String randomLatinChars = generateRandomLineOfSymbols(random, Constants.LIST_OF_LATIN_SYMBOLS);
@@ -113,6 +134,9 @@ public class WriteFileServiceImpl implements WriteFileService {
                 randomFractionalDigit;
     }
 
+    /*
+    Метод генерирующий дату в строке
+     */
     private String generateRandomDateAsString(Random random) {
         LocalDate currentDate = LocalDate.now();
         long maxQuantityOfDays = currentDate.toEpochDay();
@@ -122,6 +146,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         return LocalDate.ofEpochDay(randomQuantityOfDays).toString().replace("-", ".");
     }
 
+    /*
+    Метод генерирующий случайные символы
+     */
     private String generateRandomLineOfSymbols(Random random, String listOfSymbols) {
         StringBuilder buffer = new StringBuilder(Constants.QUANTITY_OF_SYMBOLS);
         for (int i = 0; i < Constants.QUANTITY_OF_SYMBOLS; i++) {
@@ -131,6 +158,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         return buffer.toString();
     }
 
+    /*
+    Метод для присоединения файла
+     */
     private void processFileForJoin(File file, String invalidLine) throws IOException {
         Path pathToCommonFile = Path.of(Constants.PATH_TO_COMMON_FILE);
         FileUtils.openFileIfExist(pathToCommonFile);
@@ -147,6 +177,9 @@ public class WriteFileServiceImpl implements WriteFileService {
         }
     }
 
+    /*
+    Метод для чтения файлов и заполнения базы данных
+     */
     private void processFileForDataBase(File file) throws IOException {
         final List<String> lines = Files.readAllLines(file.toPath());
         log.info("processing file {} with {} lines", file.getName(), lines.size());
@@ -165,10 +198,10 @@ public class WriteFileServiceImpl implements WriteFileService {
                     .latinSymbols(splitLine[1])
                     .cyrillicSymbols(splitLine[2])
                     .wholeDigit(Integer.parseInt(splitLine[3]))
-                    .fractionalDigit(Double.parseDouble(splitLine[4].replaceAll(",",".")))
+                    .fractionalDigit(Double.parseDouble(splitLine[4].replaceAll(",", ".")))
                     .build();
             lineRepository.save(line);
-            countProcessedRows ++;
+            countProcessedRows++;
             log.info("have written {} lines in database, {} lines left", countProcessedRows, lines.size() - countProcessedRows);
         }
     }

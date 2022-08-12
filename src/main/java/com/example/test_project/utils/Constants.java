@@ -1,10 +1,13 @@
 package com.example.test_project.utils;
-
+/*
+Класс в котором записаны все постоянные значения
+ */
 public class Constants {
     public static final int QUANTITY_OF_FILES = 10;
     public static final int QUANTITY_OF_LINES_IN_EACH_FILE = 10;
     public static final int QUANTITY_OF_SYMBOLS = 10;
-    public static final String PATTERN_OF_FILENAME = "file_";
+    public static final String PREFIX_OF_FILENAME = "file_";
+    public static final String POSTFIX_OF_FILENAME = ".txt";
     public static final String PATH_TO_FILES = "src/main/resources/data/";
     public static final String PATH_TO_COMMON_FILE = "src/main/resources/data/common_file.txt";
 
