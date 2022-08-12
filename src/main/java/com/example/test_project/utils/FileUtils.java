@@ -65,7 +65,6 @@ public class FileUtils {
                 .orElse(1);
 
     }
-
     /*
     Метод для чтения файлов из дериктории
      */
