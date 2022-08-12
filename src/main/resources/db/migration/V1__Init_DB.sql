@@ -22,4 +22,4 @@ create table line
 alter table if exists line
     add constraint forgein_key_line_to_file
     foreign key (file_id)
-    references line;
+    references file;
