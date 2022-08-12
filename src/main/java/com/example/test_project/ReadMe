@@ -1,0 +1,7 @@
+В приложении была создана БД с двумя таблицами file и line.
+В приложении используется docker,spring,lombok,flywaydb,postgresql.
+Для проверки приложения нужно использовать Postman и создать в нем get запросы.
+localhost:8080/file/generate(key и value без параметров);
+localhost:8080/file/import(key и value без параметров);
+localhost:8080/file/join(key = invalidSource, value = 202);
+localhost:8080/file/result(key и value без параметров);
