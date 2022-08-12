@@ -63,7 +63,6 @@ public class FileUtils {
                 .mapToInt(file -> getFileNumber(file.getName()))
                 .max()
                 .orElse(1);
-
     }
     /*
     Метод для чтения файлов из дериктории
